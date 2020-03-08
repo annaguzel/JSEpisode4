@@ -6,7 +6,9 @@
  * - returns undefined if no matching book is found
  ****************************************************************/
 function getBookById(bookId, books) {
-  // Your code goes here
+  let book = books.filter(function(book){return book.id == bookId;} );
+
+  return book? book[0] : undefined;
 }
 
 /**************************************************************
@@ -17,7 +19,10 @@ function getBookById(bookId, books) {
  * - returns undefined if no matching author is found
  ****************************************************************/
 function getAuthorByName(authorName, authors) {
-  // Your code goes here
+  let author = authors.filter(function(author){return author.name.toLowerCase() == authorName.toLowerCase();} );
+
+  return author? author[0] : undefined;
+
 }
 
 /**************************************************************
@@ -27,7 +32,11 @@ function getAuthorByName(authorName, authors) {
  *    [{ author: <NAME>, bookCount: <NUMBER_OF_BOOKS> }]
  ****************************************************************/
 function bookCountsByAuthor(authors) {
-  // Your code goes here
+  const result = authors.map(author => ({
+    author: author.name,
+    bookCount:author.books.length
+  }));
+  return result;
 }
 
 /**************************************************************
@@ -39,10 +48,18 @@ function bookCountsByAuthor(authors) {
  ****************************************************************/
 function booksByColor(books) {
   const colors = {};
+  books.forEach(book => {
+    if (colors[book.color]){
+      colors[book.color].push(book.title);
+      }
+    else {
+      colors[book.color] = [book.title]
+      };
+  });
 
-  // Your code goes here
 
   return colors;
+
 }
 
 /**************************************************************
@@ -54,7 +71,9 @@ function booksByColor(books) {
  *    ["The Hitchhikers Guide", "The Meaning of Liff"]
  ****************************************************************/
 function titlesByAuthorName(authorName, authors, books) {
-  // Your code goes here
+  const author = getAuthorByName(authorName, authors);
+  if (!author) return [];
+  return author.books.map(bookId => getBookById(bookId, books).title);
 }
 
 /**************************************************************
@@ -64,9 +83,16 @@ function titlesByAuthorName(authorName, authors, books) {
  *
  * Note: assume there will never be a tie
  ****************************************************************/
-function mostProlificAuthor(authors) {
-  // Your code goes here
-}
+ function mostProlificAuthor(authors) {
+   let prolificAuthor = authors[0];
+
+   authors.forEach(author => {
+     if (author.books.length > prolificAuthor.books.length) {
+       prolificAuthor = author;
+     }
+   });
+
+   return prolificAuthor.name;}
 
 /**************************************************************
  * relatedBooks(bookId, authors, books):
@@ -92,7 +118,14 @@ function mostProlificAuthor(authors) {
  * BONUS: REMOVE DUPLICATE BOOKS
  ****************************************************************/
 function relatedBooks(bookId, authors, books) {
-  // Your code goes here
+  const book = getBookById (bookId, books) ;
+  let titles = [];
+
+  book.authors.forEach(author => {
+    titles = titles.concat(titlesByAuthorName(author.name, authors, books));
+
+  });
+  return titles;
 }
 
 /**************************************************************
@@ -101,9 +134,29 @@ function relatedBooks(bookId, authors, books) {
  * - returns the name of the author that has
  *   co-authored the greatest number of books
  ****************************************************************/
-function friendliestAuthor(authors) {
-  // Your code goes here
-}
+ function friendliestAuthor(authors) {
+   authors.forEach(author => {
+     author.coauthoringCount = 0;
+     authors.forEach(secondAuthor => {
+       if (secondAuthor.name !== author.name) {
+         const sharedBooks = secondAuthor.books.filter(bookId =>
+           author.books.includes(bookId)
+         );
+         author.coauthoringCount += sharedBooks.length;
+       }
+     });
+   });
+
+   let friendlyAuthor = authors[0];
+
+   authors.forEach(author => {
+     if (author.coauthoringCount > friendlyAuthor.coauthoringCount) {
+       friendlyAuthor = author;
+     }
+   });
+
+   return friendlyAuthor.name;
+ }
 
 module.exports = {
   getBookById,
